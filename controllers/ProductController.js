@@ -3,7 +3,27 @@ const category = require('../models/category');
 const product = require('../models/product');
 
 class ProductController {
-  getProducts = async (req, res) => {
+  getProduct = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const product = await Product.findOne({
+          include: [
+            { model: Category, as:'category'},
+            { model: ProductAssets, as: 'assets' }
+          ],
+          where: { id: id }
+        })
+
+        if(product === null) res.status(404).json({ message: 'data not found'});
+        
+        res.status(200).json({
+          data: product
+        });
+    } catch (error) {
+      res.status(500).json(error);
+    }
+  }
+  allProducts = async (req, res) => {
     const { property, sorting  } = req.query;
     try {
       const products = await Product.findAll({
@@ -11,19 +31,18 @@ class ProductController {
           [property, sorting],
         ],
         include: [
-          {
-            model: Category,
-            as: 'category'
-          },
-          {
-            model: ProductAssets,
-            as: 'assets'
-          }
+          { model: Category, as: 'category' },
+          { model: ProductAssets, as: 'assets' }
         ]
       })
-      res.send(products);
+      if(products === null) res.status(404).json({
+        message: "Data Not Found"
+      })
+      res.status(200).json({
+        data: products
+      });
     } catch (error) {
-      res.send(error);
+      res.status(500).json(error);
     }
   } 
 
@@ -36,12 +55,15 @@ class ProductController {
         category_id: category_id,
         name: name,
         slug: slug,
-        price: price
+        price: price,
       });
-      res.send(createproduct);
-      // await this.uploadfile(assets, createproduct);
+      await this.uploadfile(assets, createproduct);
+      res.status(200).json({
+        message: 'Add data successfully',
+        data: createproduct
+      });
     } catch (error) {
-      res.send(error);
+      res.status(500).json(error);
     }
   }
 
@@ -72,9 +94,17 @@ class ProductController {
           id: id
         }
       })
-      res.send('Berhasil diupdate')
+      const updatedProduct = await Product.findOne({
+        where: {
+            id: id
+        }
+    });
+      res.status(200).json({
+        message: 'update data successfully',
+        data: updatedProduct
+      })
     } catch (error) {
-      res.send(error)
+      res.status(500).json(error);
     }
   }
 
@@ -82,15 +112,16 @@ class ProductController {
     try {
       const { id } = req.params;
       await Product.destroy({
+          include: [ProductAssets],
           where: {
             id: id
           }
         });
-      res.send({
+      res.status(200).json({
           message: 'delete data product successfully'
       })
     } catch (error) {
-      res.send(error);
+      res.status(500).json(error);
     }
   }
 }

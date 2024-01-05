@@ -1,13 +1,21 @@
-const { Category } = require('../models');
+const { Category, Product } = require('../models');
 
 class CategoryController {
 
     allCategories = async (req, res) => {
         try {
-            const allCategories = await Category.findAll();
-            res.send(allCategories);
+            const allCategories = await Category.findAll({
+                include: [{
+                    model: Product,
+                    as: 'products'
+                }]
+            });
+            if(allCategories === null) res.status(404).json({ message: 'Data not found' })
+            res.status(200).json({
+                data: allCategories
+            })
         } catch (error) {
-            res.send(error);
+            res.status(500).json(error)
         }
     }
 
@@ -17,9 +25,12 @@ class CategoryController {
             const category = await Category.create({
                 name: name
             })
-            res.send(category);
+            res.status(200).json({
+                message: "Category created successfully!",
+                data: category
+            })
         } catch (error) {
-            console.log(error);
+            res.status(500).json(error);
         }
     }
 
@@ -28,15 +39,16 @@ class CategoryController {
         const { name } = req.body;
         try {
             const category = await Category.update({ 
-                    name: name 
-                }, {
-                where: {
+                name: name 
+            }, { where: {
                   id: id
                 }
             });
-            res.send('Berhasil diupdate');
+            res.status(200).json({
+                message : 'update data successfully'
+            });
         } catch (error) {
-            res.send(error)
+            res.status(500).json(error);
         }
     }
 
@@ -48,11 +60,11 @@ class CategoryController {
                   id: id
                 }
               });
-            res.send({
-                message: 'delete data category successfully'
+            res.status(200).json({
+                message: 'delete data successfully'
             })
         } catch (error) {
-            res.send('sorry, something went wrong');
+            res.status(500).json(error);
         }
     }
 }

@@ -6,9 +6,13 @@ module.exports = (sequelize, DataTypes) => {
   class ProductAssets extends Model {
     static associate(models) {
       ProductAssets.belongsTo(models.Product, {
-        // as: 'product',
+        as: 'product',
         foreignKey: "product_id",
       });
+      // Product.hasMany(models.ProductAssets, {
+      //   as: 'assets',
+      //   foreignKey: 'product_id',
+      // });
     }
   }
   ProductAssets.init({
