@@ -1,6 +1,5 @@
 const express = require('express');
 const AssetsController = require('../controllers/assetsController.js');
-const crypto = require('crypto');
 const multer = require('multer');
 const path = require('path');
 const router = express.Router();
